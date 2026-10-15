@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartProperty Cost Calculator - PC Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563EB;
+      --primary-dark: #1D4ED8;
+      --primary-light: #EFF6FF;
+      --secondary: #0F172A;
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --border: #E2E8F0;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --accent-green: #10B981;
+      --accent-orange: #F59E0B;
+      --accent-purple: #8B5CF6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Topbar */
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      background: linear-gradient(135deg, #2563EB, #1D4ED8);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .brand-title { font-size: 18px; font-weight: 800; color: var(--secondary); }
+    .brand-subtitle { font-size: 12px; color: var(--text-muted); }
+    .header-actions { display: flex; gap: 12px; }
+    .btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-outline { background: white; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: #F1F5F9; }
+
+    /* Layout principal */
+    .main-container {
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 28px;
+      padding: 28px 32px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Panel izquierdo (Formulario) */
+    .form-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+      height: fit-content;
+    }
+    .form-section { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .form-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .section-header { font-size: 14px; font-weight: 800; color: var(--secondary); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; }
+    input[type="number"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--secondary);
+      background: #F8FAFC;
+      transition: border 0.2s;
+    }
+    input[type="number"]:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+    }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* Segmented Controls */
+    .segmented {
+      display: flex;
+      background: #F1F5F9;
+      padding: 4px;
+      border-radius: 8px;
+      gap: 4px;
+    }
+    .segmented button {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .segmented button.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    /* Checkboxes con diseño */
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .checkbox-item span { font-size: 13px; font-weight: 600; color: var(--text); }
+    .checkbox-item input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+
+    /* Panel derecho (Resultados) */
+    .results-panel { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 24px 28px;
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr 1px 1.2fr;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+    }
+    .hero-divider { background: #334155; width: 1px; height: 60px; }
+    .hero-kpi-label { font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .hero-kpi-value { font-size: 26px; font-weight: 800; margin-top: 4px; }
+    .hero-kpi-sub { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+    .hero-real { color: #38BDF8; }
+    .hero-extra { color: #34D399; }
+
+    /* Tarjetas Interactivas */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .breakdown-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s;
+      border-left: 5px solid var(--primary);
+    }
+    .breakdown-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08); }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .card-meta { display: flex; align-items: center; gap: 10px; }
+    .card-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .card-title { font-size: 15px; font-weight: 800; color: var(--secondary); }
+    .card-subtitle { font-size: 11px; color: var(--text-muted); }
+    .card-amount { font-size: 20px; font-weight: 800; color: var(--secondary); }
+
+    .card-items { border-top: 1px solid var(--border); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .item-row { display: flex; justify-content: space-between; font-size: 12px; }
+    .item-label { color: var(--text-muted); }
+    .item-val { font-weight: 700; color: var(--text); }
+
+    .card-ipc-highlight {
+      grid-column: span 2;
+      background: #F0F9FF;
+      border-color: #BAE6FD;
+      border-left-color: #0284C7;
+    }
+
+    .legal-property-box {
+      grid-column: span 2;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #475569;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+      margin-top: 4px;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white; }
+      header, .form-panel, .header-actions { display: none !important; }
+      .main-container { grid-template-columns: 1fr; padding: 0; }
+      .hero-banner { background: #1E293B !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .cards-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">SP</div>
+      <div>
+        <div class="brand-title">SmartProperty Cost Calculator <span style="font-size: 11px; background: #DBEAFE; color: #1E40AF; padding: 2px 8px; border-radius: 6px; font-weight: 700; margin-left: 6px;">v1.2</span></div>
+        <div class="brand-subtitle">Auditoría Inmobiliaria y Fiscal en España (PC Edition)</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="resetForm()">🔄 Restablecer</button>
+      <button class="btn btn-primary" onclick="window.print()">📄 Guardar en PDF / Imprimir</button>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <!-- PANEL IZQUIERDO: FORMULARIO -->
+    <div class="form-panel">
+      
+      <!-- Sección 1 -->
+      <div class="form-section">
+        <div class="section-header">1. Escrituración y Compra</div>
+        <div class="form-group">
+          <label>Importe Escriturado (€)</label>
+          <input type="number" id="deedPrice" value="250000" step="5000" oninput="recalculate()">
+        </div>
+        <div class="row-2">
+          <div class="form-group">
+            <label>Mes de Compra</label>
+            <select id="purchaseMonth" onchange="recalculate()">
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5" selected>Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Año de Compra</label>
+            <input type="number" id="purchaseYear" value="2018" min="2000" max="2026" oninput="recalculate()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 2 -->
+      <div class="form-section">
+        <div class="section-header">2. Transmisión e Inmueble</div>
+        <div class="form-group">
+          <label>Tipo de Transmisión</label>
+          <div class="segmented" id="transmissionTypeGroup">
+            <button type="button" class="active" onclick="setTransmission('SECOND_HAND')">Segunda Mano (ITP)</button>
+            <button type="button" onclick="setTransmission('NEW_CONSTRUCTION')">Obra Nueva (IVA+AJD)</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo de Inmueble</label>
+          <select id="propertyType" onchange="recalculate()">
+            <option value="HABITUAL_HOUSING" selected>Vivienda Habitual</option>
+            <option value="SECOND_HOME">Segunda Residencia</option>
+            <option value="COMMERCIAL_PREMISES">Local Comercial / Oficina</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Comunidad Autónoma</label>
+          <select id="autonomousCommunity" onchange="recalculate()">
+            <option value="AND">Andalucía (7%)</option>
+            <option value="ARA">Aragón (8%)</option>
+            <option value="AST">Asturias (8%)</option>
+            <option value="BAL">Baleares (8%)</option>
+            <option value="CAN">Canarias (6.5%)</option>
+            <option value="CAB">Cantabria (9%)</option>
+            <option value="CLM">Castilla-La Mancha (9%)</option>
+            <option value="CYL">Castilla y León (8%)</option>
+            <option value="CAT">Cataluña (10%)</option>
+            <option value="EXT">Extremadura (8%)</option>
+            <option value="GAL">Galicia (8%)</option>
+            <option value="MAD" selected>Comunidad de Madrid (6%)</option>
+            <option value="MUR">Murcia (8%)</option>
+            <option value="NAV">Navarra (6%)</option>
+            <option value="PVA">País Vasco (4%)</option>
+            <option value="RIO">La Rioja (7%)</option>
+            <option value="VAL">Comunitat Valenciana (10%)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Sección 3 -->
+      <div class="form-section">
+        <div class="section-header">3. Bonificaciones Fiscales</div>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <span>Comprador Joven (&le; 32/35 años)</span>
+            <input type="checkbox" id="bonifYouth" checked onchange="recalculate()">
+          </label>
+          <label class="checkbox-item">
+            <span>Familia Numerosa</span>
+            <input type="checkbox" id="bonifLargeFamily" onchange="recalculate()">
+          </label>
+          <label class="checkbox-item">
+            <span>Discapacidad (&ge; 33%)</span>
+            <input type="checkbox" id="bonifDisability" onchange="recalculate()">
+          </label>
+          <label class="checkbox-item">
+            <span>Vivienda Protección Oficial (VPO)</span>
+            <input type="checkbox" id="bonifVPO" onchange="recalculate()">
+          </label>
+        </div>
+      </div>
+
+      <!-- Sección 4 -->
+      <div class="form-section">
+        <div class="section-header">4. Hipoteca Opcional</div>
+        <label class="checkbox-item" style="margin-bottom: 12px;">
+          <span>Incluir Préstamo Hipotecario</span>
+          <input type="checkbox" id="hasMortgage" checked onchange="toggleMortgageInputs()">
+        </label>
+
+        <div id="mortgageFields">
+          <div class="form-group">
+            <label>Capital Financiado (€)</label>
+            <input type="number" id="loanAmount" value="200000" step="5000" oninput="recalculate()">
+          </div>
+          <div class="row-2">
+            <div class="form-group">
+              <label>Tipo Interés (%)</label>
+              <input type="number" id="interestRate" value="2.85" step="0.05" oninput="recalculate()">
+            </div>
+            <div class="form-group">
+              <label>Plazo (Años)</label>
+              <input type="number" id="termYears" value="25" min="5" max="40" oninput="recalculate()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PANEL DERECHO: RESULTADOS -->
+    <div class="results-panel">
+      
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div>
+          <div class="hero-kpi-label">Costo Nominal Total</div>
+          <div class="hero-kpi-value" id="kpiNominal">304.206 €</div>
+          <div class="hero-kpi-sub">Caja histórica desembolsada</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div>
+          <div class="hero-kpi-label">Valor Actualizado (IPC)</div>
+          <div class="hero-kpi-value hero-real" id="kpiReal">382.705 €</div>
+          <div class="hero-kpi-sub hero-extra" id="kpiInflation">+25.8% Inflación acumulada</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div>
+          <div class="hero-kpi-label">Esfuerzo Monetario Real</div>
+          <div class="hero-kpi-value hero-extra" id="kpiEffort">+78.499 €</div>
+          <div class="hero-kpi-sub">Pérdida de poder adquisitivo sufrida</div>
+        </div>
+      </div>
+
+      <!-- 6 Tarjetas de Resultados -->
+      <div class="cards-grid">
+        
+        <!-- Tarjeta 1 -->
+        <div class="breakdown-card" style="border-left-color: #0284C7;">
+          <div class="card-head">
+            <div class="card-meta">
+              <div class="card-badge" style="background:#E0F2FE; color:#0284C7;">1</div>
+              <div>
+                <div class="card-title">Escrituración Base</div>
+                <div class="card-subtitle">Precio de adjudicación</div>
+              </div>
+            </div>
+            <div class="card-amount" id="card1Amount">250.000 €</div>
+          </div>
+          <div class="card-items">
+            <div class="item-row"><span class="item-label">Valor contractual:</span><span class="item-val" id="card1Val">250.000,00 €</span></div>
+            <div class="item-row"><span class="item-label">Porcentaje sobre coste:</span><span class="item-val" id="card1Pct">82.2%</span></div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 2 -->
+        <div class="breakdown-card" style="border-left-color: #EA580C;">
+          <div class="card-head">
+            <div class="card-meta">
+              <div class="card-badge" style="background:#FFEDD5; color:#EA580C;">2</div>
+              <div>
+                <div class="card-title" id="card2Title">Impuestos (ITP)</div>
+                <div class="card-subtitle" id="card2Subtitle">Tributación autonómica</div>
+              </div>
+            </div>
+            <div class="card-amount" id="card2Amount">10.000 €</div>
+          </div>
+          <div class="card-items">
+            <div class="item-row"><span class="item-label">Tipo impositivo:</span><span class="item-val" id="card2Rate">4.00% (Bonificado Joven)</span></div>
+            <div class="item-row"><span class="item-label">Cuota liquidada:</span><span class="item-val" id="card2Cuota">10.000,00 €</span></div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 3 -->
+        <div class="breakdown-card" style="border-left-color: #16A34A;">
+          <div class="card-head">
+            <div class="card-meta">
+              <div class="card-badge" style="background:#DCFCE7; color:#16A34A;">3</div>
+              <div>
+                <div class="card-title">Aranceles Regulados</div>
+                <div class="card-subtitle">RD 1426/1989 y RD 1427/1989</div>
+              </div>
+            </div>
+            <div class="card-amount" id="card3Amount">1.299 €</div>
+          </div>
+          <div class="card-items">
+            <div class="item-row"><span class="item-label">Notaría (Arancel + IVA):</span><span class="item-val" id="card3Notary">627,24 €</span></div>
+            <div class="item-row"><span class="item-label">Registro de la Propiedad:</span><span class="item-val" id="card3Registry">352,32 €</span></div>
+            <div class="item-row"><span class="item-label">Gestoría Administrativa:</span><span class="item-val">320,00 €</span></div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 4 -->
+        <div class="breakdown-card" style="border-left-color: #8B5CF6;">
+          <div class="card-head">
+            <div class="card-meta">
+              <div class="card-badge" style="background:#EDE9FE; color:#8B5CF6;">4</div>
+              <div>
+                <div class="card-title">Costes Financieros</div>
+                <div class="card-subtitle">A la fecha actual</div>
+              </div>
+            </div>
+            <div class="card-amount" id="card4Amount">42.906 €</div>
+          </div>
+          <div class="card-items">
+            <div class="item-row"><span class="item-label">Cuota mensual fija:</span><span class="item-val" id="card4Payment">932,89 € /mes</span></div>
+            <div class="item-row"><span class="item-label">Intereses pagados a hoy:</span><span class="item-val" id="card4Interest">42.026,48 €</span></div>
+            <div class="item-row"><span class="item-label">Gastos (Tasación + Apertura):</span><span class="item-val" id="card4Initial">880,00 €</span></div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 5 -->
+        <div class="breakdown-card" style="border-left-color: #0F172A;">
+          <div class="card-head">
+            <div class="card-meta">
+              <div class="card-badge" style="background:#F1F5F9; color:#0F172A;">5</div>
+              <div>
+                <div class="card-title">Costo Nominal Total</div>
+                <div class="card-subtitle">Total tesorería desembolsada</div>
+              </div>
+            </div>
+            <div class="card-amount" id="card5Amount">304.206 €</div>
+          </div>
+          <div class="card-items">
+            <div class="item-row"><span class="item-label">Inmueble + Impuestos + Gastos:</span><span class="item-val" id="card5Base">261.299,56 €</span></div>
+            <div class="item-row"><span class="item-label">Costes hipoteca pagados:</span><span class="item-val" id="card5Mortgage">42.906,48 €</span></div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 6 (Destacada) -->
+        <div class="breakdown-card card-ipc-highlight">
+          <div class="card-head">
+            <div class="card-meta">
+              <div class="card-badge" style="background:#BAE6FD; color:#0284C7;">6</div>
+              <div>
+                <div class="card-title" style="color:#0369A1; font-size:16px;">Costo Real Actualizado por IPC (INE)</div>
+                <div class="card-subtitle">Ajuste económico por inflación y coste de oportunidad</div>
+              </div>
+            </div>
+            <div class="card-amount" style="color:#0284C7; font-size:24px;" id="card6Amount">382.705 €</div>
+          </div>
+          <div class="card-items" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+            <div>
+              <div class="item-label">IPC Compra vs Actual:</div>
+              <div class="item-val" id="card6Indices" style="font-size:14px; margin-top:2px;">88.55 &rarr; 111.40</div>
+            </div>
+            <div>
+              <div class="item-label">Coeficiente INE:</div>
+              <div class="item-val" id="card6Coef" style="font-size:14px; margin-top:2px;">x1.2580 (+25.8%)</div>
+            </div>
+            <div>
+              <div class="item-label">Sobrecoste por Pérdida de Poder:</div>
+              <div class="item-val" id="card6Diff" style="font-size:14px; color:#0284C7; margin-top:2px;">+78.499,24 €</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cuadro de Titularidad y Derechos de Propiedad -->
+        <div class="legal-property-box">
+          Esta aplicación ha sido desarrollada y es propiedad de J. Emérito Real Estate Consulting &amp; Management. Todos los derechos sobre su desarrollo y titularidad quedan reservados, salvo aquellos elementos sujetos a derechos de terceros.
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    let currentTransmission = 'SECOND_HAND';
+
+    const CCAA_RULES = {
+      AND: { defItp: 0.07, youthItp: 0.035, ajd: 0.012 },
+      ARA: { defItp: 0.08, youthItp: 0.05, ajd: 0.015 },
+      AST: { defItp: 0.08, youthItp: 0.06, ajd: 0.012 },
+      BAL: { defItp: 0.08, youthItp: 0.04, ajd: 0.015 },
+      CAN: { defItp: 0.065, youthItp: 0.05, ajd: 0.010 },
+      CAB: { defItp: 0.09, youthItp: 0.05, ajd: 0.015 },
+      CLM: { defItp: 0.09, youthItp: 0.06, ajd: 0.015 },
+      CYL: { defItp: 0.08, youthItp: 0.04, ajd: 0.015 },
+      CAT: { defItp: 0.10, youthItp: 0.05, ajd: 0.015 },
+      EXT: { defItp: 0.08, youthItp: 0.04, ajd: 0.015 },
+      GAL: { defItp: 0.08, youthItp: 0.03, ajd: 0.012 },
+      MAD: { defItp: 0.06, youthItp: 0.04, ajd: 0.0075 },
+      MUR: { defItp: 0.08, youthItp: 0.03, ajd: 0.015 },
+      NAV: { defItp: 0.06, youthItp: 0.05, ajd: 0.005 },
+      PVA: { defItp: 0.04, youthItp: 0.025, ajd: 0.005 },
+      RIO: { defItp: 0.07, youthItp: 0.05, ajd: 0.010 },
+      VAL: { defItp: 0.10, youthItp: 0.06, ajd: 0.015 }
+    };
+
+    const IPC_ANNUAL = {
+      2000: 60.5, 2001: 62.75, 2002: 64.95, 2003: 66.9, 2004: 69.1,
+      2005: 71.4, 2006: 73.9, 2007: 76.0, 2008: 79.2, 2009: 78.9,
+      2010: 80.3, 2011: 82.8, 2012: 84.8, 2013: 86.0, 2014: 85.9,
+      2015: 85.4, 2016: 85.1, 2017: 86.8, 2018: 88.55, 2019: 88.9,
+      2020: 88.4, 2021: 91.5, 2022: 97.8, 2023: 101.2, 2024: 104.1,
+      2025: 106.8, 2026: 111.4
+    };
+
+    function setTransmission(type) {
+      currentTransmission = type;
+      const btns = document.querySelectorAll('#transmissionTypeGroup button');
+      btns[0].classList.toggle('active', type === 'SECOND_HAND');
+      btns[1].classList.toggle('active', type === 'NEW_CONSTRUCTION');
+      recalculate();
+    }
+
+    function toggleMortgageInputs() {
+      const checked = document.getElementById('hasMortgage').checked;
+      document.getElementById('mortgageFields').style.display = checked ? 'block' : 'none';
+      recalculate();
+    }
+
+    function eur(v) {
+      return v.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    }
+
+    function eurShort(v) {
+      return Math.round(v).toLocaleString('es-ES') + ' €';
+    }
+
+    function calculateNotaryFees(v) {
+      if (v <= 0) return { total: 0, base: 0 };
+      let b = 90.15;
+      if (v > 6010.12) b += (Math.min(v, 30050.61) - 6010.12) * 0.0045;
+      if (v > 30050.61) b += (Math.min(v, 150253.03) - 30050.61) * 0.0015;
+      if (v > 150253.03) b += (Math.min(v, 601012.10) - 150253.03) * 0.0010;
+      if (v > 601012.10) b += (v - 601012.10) * 0.0005;
+      const sub = Math.round((b + 40) * 100) / 100;
+      const iva = Math.round(sub * 0.21 * 100) / 100;
+      return { total: sub + iva, base: Math.round(b * 100) / 100 };
+    }
+
+    function calculateRegistryFees(v) {
+      if (v <= 0) return { total: 0, base: 0 };
+      let b = 24.04;
+      if (v > 6010.12) b += (Math.min(v, 30050.61) - 6010.12) * 0.00175;
+      if (v > 30050.61) b += (Math.min(v, 150253.03) - 30050.61) * 0.00125;
+      if (v > 150253.03) b += (Math.min(v, 601012.10) - 150253.03) * 0.00075;
+      if (v > 601012.10) b += (v - 601012.10) * 0.00030;
+      const sub = Math.min(b, 2180.37);
+      const iva = Math.round(sub * 0.21 * 100) / 100;
+      return { total: sub + iva, base: Math.round(sub * 100) / 100 };
+    }
+
+    function recalculate() {
+      const price = parseFloat(document.getElementById('deedPrice').value) || 0;
+      const year = parseInt(document.getElementById('purchaseYear').value) || 2020;
+      const month = parseInt(document.getElementById('purchaseMonth').value) || 1;
+      const ccaaKey = document.getElementById('autonomousCommunity').value;
+      const ccaa = CCAA_RULES[ccaaKey] || CCAA_RULES.MAD;
+
+      const isYouth = document.getElementById('bonifYouth').checked;
+      const isLarge = document.getElementById('bonifLargeFamily').checked;
+      const isDisab = document.getElementById('bonifDisability').checked;
+      const isVPO = document.getElementById('bonifVPO').checked;
+
+      // 1. Escrituración
+      const notaria = calculateNotaryFees(price);
+      const registro = calculateRegistryFees(price);
+      const gestoria = 320.0;
+      const arancelesTotal = notaria.total + registro.total + gestoria;
+
+      // 2. Impuestos
+      let taxAmount = 0;
+      let taxRateDesc = '';
+      if (currentTransmission === 'SECOND_HAND') {
+        let rate = ccaa.defItp;
+        if (isYouth || isLarge || isDisab) rate = ccaa.youthItp;
+        taxAmount = price * rate;
+        taxRateDesc = `${(rate * 100).toFixed(2)}% ${rate < ccaa.defItp ? '(Bonificado)' : '(General)'}`;
+        document.getElementById('card2Title').textContent = 'Impuestos (ITP)';
+      } else {
+        let ivaRate = isVPO ? 0.04 : 0.10;
+        let ajdRate = ccaa.ajd;
+        taxAmount = (price * ivaRate) + (price * ajdRate);
+        taxRateDesc = `IVA ${(ivaRate*100)}% + AJD ${(ajdRate*100).toFixed(2)}%`;
+        document.getElementById('card2Title').textContent = 'Impuestos (IVA + AJD)';
+      }
+
+      // 3. Hipoteca
+      const hasMortgage = document.getElementById('hasMortgage').checked;
+      let mortgageTotal = 0;
+      let monthlyPay = 0;
+      let interestPaid = 0;
+      let initialFees = 0;
+
+      if (hasMortgage) {
+        const loan = parseFloat(document.getElementById('loanAmount').value) || 0;
+        const ratePct = parseFloat(document.getElementById('interestRate').value) || 0;
+        const termY = parseInt(document.getElementById('termYears').value) || 25;
+
+        const n = termY * 12;
+        const r = (ratePct / 100) / 12;
+        if (r > 0 && n > 0) {
+          monthlyPay = (loan * (r * Math.pow(1 + r, n))) / (Math.pow(1 + r, n) - 1);
+          
+          // Meses transcurridos a Octubre 2026
+          const elapsed = Math.min(n, Math.max(0, (2026 - year) * 12 + (10 - month)));
+          let rem = loan;
+          for (let i = 1; i <= elapsed; i++) {
+            const intM = rem * r;
+            interestPaid += intM;
+            rem -= (monthlyPay - intM);
+          }
+        }
+        initialFees = 380 + (loan * 0.0025);
+        mortgageTotal = initialFees + interestPaid;
+      }
+
+      // 4. Totales
+      const nominalTotal = price + taxAmount + arancelesTotal + mortgageTotal;
+
+      // 5. IPC
+      const ipcom = IPC_ANNUAL[year] || 88.55;
+      const ipact = 111.4;
+      const coef = ipact / ipcom;
+      const realTotal = nominalTotal * coef;
+      const inflationPct = ((coef - 1) * 100);
+      const effortDiff = realTotal - nominalTotal;
+
+      // Render KPIs
+      document.getElementById('kpiNominal').textContent = eurShort(nominalTotal);
+      document.getElementById('kpiReal').textContent = eurShort(realTotal);
+      document.getElementById('kpiInflation').textContent = `+${inflationPct.toFixed(1)}% Inflación oficial INE`;
+      document.getElementById('kpiEffort').textContent = `+${eurShort(effortDiff)}`;
+
+      // Render Tarjeta 1
+      document.getElementById('card1Amount').textContent = eurShort(price);
+      document.getElementById('card1Val').textContent = eur(price);
+      document.getElementById('card1Pct').textContent = nominalTotal > 0 ? ((price / nominalTotal) * 100).toFixed(1) + '%' : '0%';
+
+      // Render Tarjeta 2
+      document.getElementById('card2Amount').textContent = eurShort(taxAmount);
+      document.getElementById('card2Cuota').textContent = eur(taxAmount);
+      document.getElementById('card2Rate').textContent = taxRateDesc;
+
+      // Render Tarjeta 3
+      document.getElementById('card3Amount').textContent = eurShort(arancelesTotal);
+      document.getElementById('card3Notary').textContent = eur(notaria.total);
+      document.getElementById('card3Registry').textContent = eur(registro.total);
+
+      // Render Tarjeta 4
+      document.getElementById('card4Amount').textContent = eurShort(mortgageTotal);
+      document.getElementById('card4Payment').textContent = eur(monthlyPay) + ' /mes';
+      document.getElementById('card4Interest').textContent = eur(interestPaid);
+      document.getElementById('card4Initial').textContent = eur(initialFees);
+
+      // Render Tarjeta 5
+      document.getElementById('card5Amount').textContent = eurShort(nominalTotal);
+      document.getElementById('card5Base').textContent = eur(price + taxAmount + arancelesTotal);
+      document.getElementById('card5Mortgage').textContent = eur(mortgageTotal);
+
+      // Render Tarjeta 6
+      document.getElementById('card6Amount').textContent = eurShort(realTotal);
+      document.getElementById('card6Indices').textContent = `${ipcom.toFixed(2)} (${year}) \u2192 ${ipact.toFixed(2)} (2026)`;
+      document.getElementById('card6Coef').textContent = `x${coef.toFixed(4)} (+${inflationPct.toFixed(2)}%)`;
+      document.getElementById('card6Diff').textContent = `+${eur(effortDiff)}`;
+    }
+
+    function resetForm() {
+      document.getElementById('deedPrice').value = '250000';
+      document.getElementById('purchaseYear').value = '2018';
+      document.getElementById('purchaseMonth').value = '5';
+      document.getElementById('autonomousCommunity').value = 'MAD';
+      setTransmission('SECOND_HAND');
+      recalculate();
+    }
+
+    window.onload = recalculate;
+  </script>
+</body>
+</html>
